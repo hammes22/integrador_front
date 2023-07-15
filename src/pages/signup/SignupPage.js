@@ -1,15 +1,13 @@
 import React, { useContext, useEffect } from "react";
-import labEdit from "../../assets/image/LabEdit.png";
 import {
   Alert,
   AlertIcon,
-  Button,
   Center,
-  Divider,
+  Checkbox,
+  Container,
   Flex,
   FormControl,
   FormErrorMessage,
-  Image,
   Input,
   Stack,
   Text,
@@ -18,46 +16,70 @@ import {
 import { useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signinSchema } from "../../validations/signinSchema";
 import { GlobalContext } from "../../context/globalContext";
-import { useNavigate } from "react-router-dom";
-import { goToSignupPage } from "../../routes/coordinator";
+import { signupSchema } from "../../validations/signupSchema";
+import Header from "../../components/Header";
 import { ButtonGradiente } from "../../components/ButtonGradiente";
+import { useNavigate } from "react-router-dom";
+import { goToHomePage } from "../../routes/coordinator";
 
-export default function SigninPage() {
+export default function SignupPage() {
   const { auth } = useContext(GlobalContext);
-  const { signin, errorMessage } = auth;
+  const { signup, errorMessage, signout, isSuccessSignup } = auth;
+
   const navigate = useNavigate();
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    signout();
+  }, []);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({
-    resolver: zodResolver(signinSchema),
+    resolver: zodResolver(signupSchema),
   });
-
   const onSubmit = async (data) => {
-    signin(data);
+    signup(data);
+
+    if (isSuccessSignup) {
+      reset();
+      goToHomePage(navigate);
+    }
   };
 
   return (
-    <Flex justifyContent="center" alignItems="start">
-      <Flex
-        marginTop={10}
-        flexDirection="column"
-        alignItems="center"
-        width="-moz-fit-content"
-      >
+    <Container
+      as="main"
+      justifyContent="center"
+      alignItems="start"
+      width="100vw"
+    >
+      <Flex flexDirection="column" alignItems="center" width="-moz-max-content">
+        <Container as="header" flexDirection="column">
+          <Header />
+        </Container>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <Stack spacing={10} padding={5} width="sm">
-            <Center flexDirection="column">
-              <Image src={labEdit} alt="LabEdit" width="152px" />
-              <Text>O projeto de rede social da Labenu</Text>
+          <Stack spacing={5} padding={5} width="sm">
+            <Center flexDirection="column" marginBottom={10}>
+              <Text fontSize="3xl" fontWeight="bold">
+                Olá, boas vindas ao LabEddit ;)
+              </Text>
             </Center>
             <Center flexDirection="column" gap={5}>
+              <FormControl isInvalid={errors.name}>
+                <Input
+                  type="text"
+                  placeholder="name"
+                  size="lg"
+                  {...register("name")}
+                />
+                {errors.name && (
+                  <FormErrorMessage>{errors.name.message}</FormErrorMessage>
+                )}
+              </FormControl>
               <FormControl isInvalid={errors.email}>
                 <Input
                   type="text"
@@ -90,23 +112,27 @@ export default function SigninPage() {
               </FormControl>
             </Center>
             <Center flexDirection="column" gap={5}>
+              <Text>
+                Ao continuar, você concorda com o nosso Contrato de usuário e
+                nossa Política de Privacidade
+              </Text>
+            </Center>
+            <FormControl isInvalid={errors.aceite}>
+              <Checkbox {...register("aceite")}>
+                Eu concordo em receber emails sobre coisas legais no Labeddit
+              </Checkbox>
+              {errors.aceite && (
+                <FormErrorMessage>{errors.aceite.message}</FormErrorMessage>
+              )}
+            </FormControl>
+            <Center flexDirection="column" gap={5}>
               <ButtonGradiente borderRadius="24px" width="100%" type="submit">
-                Continuar
+                Cadastrar
               </ButtonGradiente>
-              <Divider bgColor="primary.DEFAULT" />
-              <Button
-                borderRadius="24px"
-                width="100%"
-                onClick={() => {
-                  goToSignupPage(navigate);
-                }}
-              >
-                Crie uma conta!
-              </Button>
             </Center>
           </Stack>
         </form>
       </Flex>
-    </Flex>
+    </Container>
   );
 }
